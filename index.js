@@ -1,200 +1,157 @@
-let message = {
-    date: "",
-    time: "",
-    tzone: "",
-    msg: ""
-}
+const dayjs = require("dayjs");
+var utc = require('dayjs/plugin/utc')
+var timezone = require('dayjs/plugin/timezone')
+const parse_message = require("./message_parser")
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
-const messageModal1 = {
-    "type": "modal",
-    "callback_id": "selected",
-    "submit": {
-        "type": "plain_text",
-        "text": "Next",
-        "emoji": true
-    },
-    "close": {
-        "type": "plain_text",
-        "text": "Cancel",
-        "emoji": true
-    },
-    "title": {
-        "type": "plain_text",
-        "text": "Message and Recipents",
-        "emoji": true
-    },
-    "blocks": [
-        {
-            "type": "divider"
-        },
-        {
-            "type": "input",
-            "label": {
-                "type": "plain_text",
-                "text": "Message",
-                "emoji": true
-            },
-            "element": {
-                "type": "plain_text_input",
-                "multiline": true
+//Main function to send messages
+async function fire_message(message, recipents, client, user){
+    var failed = 0;
+    var u_inf = {
+        first_name: "",
+        last_name:  ""
+    }
+    console.log(message.date, message.time)
+    //For user type
+    for(var i of recipents.users){
+        try{
+            // It just works with Epoch time which is in UTC
+            var d = dayjs.tz(message.date + " " + message.time, "Etc/UTC")
+            d = d.unix()
+
+            var inf = await client.users.info({user: i});
+            inf = inf.user['real_name'].split(/(\s+)/);
+
+            u_inf.last_name = inf[inf.length-1]
+            inf = inf.slice(0,inf.length-1);
+            u_inf.first_name = inf.join("")
+
+            var m = parse_message(message.msg, u_inf);
+            if(message.tzone == 't1'){
+                var deltaT = await client.users.info({user: user});
+                deltaT = deltaT.user["tz_offset"];
+                d -= deltaT
             }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Recipents"
-            },
-            "accessory": {
-                "type": "multi_conversations_select",
-                "placeholder": {
-                    "type": "plain_text",
-                    "text": "Select conversations",
-                    "emoji": true
-                },
-                "action_id": "multi_conversations_select-action"
+            else if(message.tzone == 't2'){
+                var deltaT = await client.users.info({user: i});
+                deltaT = deltaT.user["tz_offset"];
+                d -= deltaT
+                
+            }
+
+            if(d >= dayjs().unix()){
+                //console.log("Present")
+                let result = await client.chat.scheduleMessage({
+                    channel: i,
+                    text: m,
+                    post_at: d
+                });    
+            }
+            else{
+                //console.log("Past")
+                let result = await client.chat.postMessage({
+                    channel: i,
+                    text: m
+                });
+            }
+            let data = JSON.stringify({recipent: i, message: m, time: dayjs.unix(d).format()})
+            fs.appendFile(logFile, data + "\n", (err) => {
+                if(err) throw err;
+            });
+            
+        }
+        catch(e){
+            failed++;
+            console.log(e);
+        }
+        
+    }
+
+    // For Channels with Message timezone as Recipent Time, we DM each user at the correct time
+    if(message.tzone == 't2'){
+        var chan_users = [];
+        for(var i of recipents.channels){
+            let chan_info = await client.conversations.members({channel: i});
+            var members = chan_info.members
+            for(var j of members){
+                chan_users.push(j)
+            }       
+        }
+        chan_users = [...new Set(chan_users)]
+        for(var i of chan_users){
+            try{
+                var d = dayjs.tz(message.date + " " + message.time, "Etc/UTC")
+                d = d.unix()
+                var deltaT = await client.users.info({user: i});
+                deltaT = deltaT.user["tz_offset"];
+                d -= deltaT
+                if(d >= dayjs().unix()){
+                    let result = await client.chat.scheduleMessage({
+                        channel: i,
+                        text: message.msg,
+                        post_at: d
+                    });
+                }
+                else{
+                    let result = await client.chat.postMessage({
+                        channel: i,
+                        text: message.msg,
+                    });
+                }
+                let data = JSON.stringify({recipent: i, message: message.msg, time: dayjs.unix(d).format()})
+                fs.appendFile(logFile, data + "\n", (err) => {
+                    if(err) throw err;
+                });
+            }
+            catch(e){
+                failed++;
+                console.log(e);
             }
         }
-    ]
-}
+    }
+    else if(message.tzone == 't3' || message.tzone == 't1'){
+        for(var i of recipents.channels){
+            try{
+                var d = dayjs.tz(message.date + " " + message.time, "Etc/UTC")
+                d = d.unix()
+                if(message.tzone == 't1'){
+                    var deltaT = await client.users.info({user: user});
+                    deltaT = deltaT.user["tz_offset"];
+                    d -= deltaT
+                }
 
-const helloModal = {
-    blocks: [
-        {
-            "type": "section",
-            "text": {
-                "type": "plain_text",
-                "text": `Hey there!!`
-            },
-            "accessory": {
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Schedule a Message"
-                },
-                "action_id": "button_click"
+                if(d >= dayjs().unix()){
+                    let result = await client.chat.scheduleMessage({
+                        channel: i,
+                        text: message.msg,
+                        post_at: d
+                    });
+                }
+                else{
+                    let result = await client.chat.postMessage({
+                        channel: i,
+                        text: message.msg,
+                    });
+                }
+                let data = JSON.stringify({recipent: i, message: message.msg, time: dayjs.unix(d).format()})
+                fs.appendFile(logFile, data + "\n", (err) => {
+                    if(err) throw err;
+                });
+
+            }
+            catch(e){
+                failed++;
+                console.log(e);
             }
         }
-    ],
-    text: `Hey there!`
+    }
+
+    console.log("No. of Failed Messages ", failed);
+    fs.appendFile(logFile, "No. of Failed Messages " + failed + "\n", (err) => {
+       if(err) throw err;
+    });
 }
 
-const newModal = {
-    "callback_id": "reminder_set",
-    "title": {
-        "type": "plain_text",
-        "text": "Date and Time",
-        "emoji": true
-    },
-    "submit": {
-        "type": "plain_text",
-        "text": "Submit",
-        "emoji": true
-    },
-    "type": "modal",
-    "close": {
-        "type": "plain_text",
-        "text": "Cancel",
-        "emoji": true
-    },
-    "blocks": [
-        {
-            "type": "divider"
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "*Message*"
-            }
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": `hi`
-            }
-        },
-        {
-            "type": "input",
-            "element": {
-                "type": "datepicker",
-                "initial_date": "1990-04-28",
-                "placeholder": {
-                    "type": "plain_text",
-                    "text": "Select a date",
-                    "emoji": true
-                },
-                "action_id": "datepicker-action"
-            },
-            "label": {
-                "type": "plain_text",
-                "text": "Date",
-                "emoji": true
-            }
-        },
-        {
-            "type": "input",
-            "element": {
-                "type": "timepicker",
-                "initial_time": "13:37",
-                "placeholder": {
-                    "type": "plain_text",
-                    "text": "Select time",
-                    "emoji": true
-                },
-                "action_id": "timepicker-action"
-            },
-            "label": {
-                "type": "plain_text",
-                "text": "Time",
-                "emoji": true
-            }
-        },
-        {
-            "type": "input",
-            "element": {
-                "type": "static_select",
-                "placeholder": {
-                    "type": "plain_text",
-                    "text": "Select an item",
-                    "emoji": true
-                },
-                "options": [
-                    {
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Sender Timezone",
-                            "emoji": true
-                        },
-                        "value": "t1"
-                    },
-                    {
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Recipent Timezone",
-                            "emoji": true
-                        },
-                        "value": "t2"
-                    },
-                    {
-                        "text": {
-                            "type": "plain_text",
-                            "text": "GMT",
-                            "emoji": true
-                        },
-                        "value": "t3"
-                    }
-                ],
-                "action_id": "static_select-action"
-            },
-            "label": {
-                "type": "plain_text",
-                "text": "Timezone",
-                "emoji": true
-            }
-        }
-    ]
-};
 
-module.exports = {messageModal1: messageModal1, helloModal: helloModal, newModal: newModal}
+module.exports = fire_message
