@@ -81,9 +81,9 @@ channels:read
 
 Copy Client ID and Client Secret into .env
 
-🧱 Architectural Overview
-➤ OAuth Flow
-Users click "Connect to Slack"
+🧱 Architectural Overview<br>
+➤ OAuth Flow<br>
+Users click "Connect to Slack"<br>
 
 Redirected to Slack OAuth screen
 
@@ -132,7 +132,7 @@ Backend: Render, Heroku, Railway
 
 Update .env values with your deployed backend URL and Slack redirect URL
 
-💡 Challenges & Learnings
+💡 Challenges & Learnings<br>
 🔄 Refresh Token Logic
 Slack does not provide long-lived refresh tokens. Learned to:
 
