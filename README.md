@@ -1,5 +1,4 @@
-Slack Connect 
-
+Slack Connect - Cobalt AI Assignment  
 
 Slack Connect is a full-stack application that allows users to:
 
