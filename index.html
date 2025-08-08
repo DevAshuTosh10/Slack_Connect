@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slack Scheduler</title>
+</head>
+<body>
+  <h2>Schedule Slack Message</h2>
+  <form id="schedule-form">
+    <label>Recipients (Comma-separated IDs):</label><br>
+    <input type="text" id="recipients" required placeholder="e.g. C0123456,U12345678"><br><br>
+
+    <label>Message:</label><br>
+    <textarea id="message" required></textarea><br><br>
+
+    <label>Date:</label><br>
+    <input type="date" id="date" required><br><br>
+
+    <label>Time:</label><br>
+    <input type="time" id="time" required><br><br>
+
+    <label>Timezone:</label><br>
+    <input type="text" id="timezone" required placeholder="e.g. Asia/Kolkata"><br><br>
+
+    <button type="submit">Schedule</button>
+  </form>
+
+  <p id="response"></p>
+
+  <script>
+    document.getElementById('schedule-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const recipients = document.getElementById('recipients').value
+        .split(',')
+        .map(id => id.trim())
+        .filter(id => id.length > 0);
+
+      const message = document.getElementById('message').value;
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const timezone = document.getElementById('timezone').value;
+
+      const scheduledAt = new Date(`${date}T${time}:00`);
+      const utcTimestamp = Math.floor(
+        new Date(scheduledAt.toLocaleString('en-US', { timeZone: timezone })).getTime() / 1000
+      );
+
+      const payload = {
+        recipients,
+        message,
+        scheduledTime: utcTimestamp,
+        timezone,
+      };
+
+      try {
+        const res = await fetch('/api/schedule-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        document.getElementById('response').innerText = result.status || 'Message scheduled';
+      } catch (err) {
+        document.getElementById('response').innerText = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
