@@ -12,8 +12,7 @@ Slack Connect is a full-stack application that allows users to:
 
 📂 Project Structure
 arduino
-Copy
-Edit
+
 slack-connect/<br>
 ├── backend/          // Node.js + Express + TypeScript<br>
 ├── frontend/         // React + TypeScript<br>
@@ -23,48 +22,42 @@ Layer	Tech Used
 Frontend	React, TypeScript, Axios, React Router
 Backend	Node.js, Express.js, TypeScript
 OAuth	Slack OAuth 2.0
-DB	SQLite / MongoDB (choose one)
 Scheduler	node-cron
-Deployment	(optional) Vercel, Render, Heroku
+Deployment	(optional) Vercel, Render , Netlify
 
 🛠️ Setup Instructions
 1. Clone the Repository
-bash
-Copy
-Edit
+bash<br>
+
 git clone https://github.com/yourusername/slack-connect.git
 cd slack-connect
 2. Backend Setup (/backend)
 🔧 Install Dependencies
 bash
-Copy
-Edit
+<br>
 cd backend
 npm install
 📁 Create .env file
-env
-Copy
-Edit
+
+env<br>
+
 SLACK_CLIENT_ID=your_slack_client_id<br>
 SLACK_CLIENT_SECRET=your_slack_client_secret<br>
 SLACK_REDIRECT_URI=http://localhost:5000/auth/callback<br>
 PORT=5000<br>
 ▶️ Run Backend Server<br>
 bash
-Copy
-Edit
 npm run dev
 3. Frontend Setup (/frontend)
+
 🔧 Install Dependencies
 bash
-Copy
-Edit
+
 cd frontend
 npm install
 📁 Create .env file
 env
-Copy
-Edit
+<br>
 REACT_APP_API_BASE=http://localhost:5000
 ▶️ Run Frontend Server
 bash
