@@ -46,11 +46,11 @@ npm install
 env
 Copy
 Edit
-SLACK_CLIENT_ID=your_slack_client_id
-SLACK_CLIENT_SECRET=your_slack_client_secret
-SLACK_REDIRECT_URI=http://localhost:5000/auth/callback
-PORT=5000
-▶️ Run Backend Server
+SLACK_CLIENT_ID=your_slack_client_id<br>
+SLACK_CLIENT_SECRET=your_slack_client_secret<br>
+SLACK_REDIRECT_URI=http://localhost:5000/auth/callback<br>
+PORT=5000<br>
+▶️ Run Backend Server<br>
 bash
 Copy
 Edit
@@ -79,7 +79,7 @@ Create a new app from scratch
 
 Enable OAuth & Permissions
 
-Add redirect URI: http://localhost:5000/auth/callback
+Add redirect URI: http://localhost:5000/auth/callback<br>
 
 Add scopes:
 
