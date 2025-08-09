@@ -30,92 +30,89 @@ Deployment	(optional) Vercel, Render , Netlify
 bash<br>
 
 git clone https://github.com/yourusername/slack-connect.git
-cd slack-connect
-2. Backend Setup (/backend)
+cd slack-connect<br>
+2. Backend Setup (/backend)<br>
 🔧 Install Dependencies
 bash
 <br>
-cd backend
-npm install
+cd backend<br>
+npm install<br>
 📁 Create .env file
 
 env<br>
 
 SLACK_CLIENT_ID=your_slack_client_id<br>
 SLACK_CLIENT_SECRET=your_slack_client_secret<br>
-SLACK_REDIRECT_URI=http://localhost:5000/auth/callback<br>
+SLACK_REDIRECT_URI= http://localhost:5000/auth/callback<br>
 PORT=5000<br>
 ▶️ Run Backend Server<br>
 bash
-npm run dev
+npm run dev<br>
 3. Frontend Setup (/frontend)
+<br>
+🔧 Install Dependencies<br>
 
-🔧 Install Dependencies
-bash
-
-cd frontend
-npm install
-📁 Create .env file
+frontend<br>
+npm install<br>
+📁 Create .env file<br>
 env
 <br>
-REACT_APP_API_BASE=http://localhost:5000
-▶️ Run Frontend Server
-bash
-Copy
-Edit
-npm start
-🔐 Slack App Configuration
-Go to Slack API Dashboard
+REACT_APP_API_BASE=http://localhost:5000 <br>
+▶️ Run Frontend Server <br>
 
-Create a new app from scratch
+npm start<br>
+🔐 Slack App Configuration<br>
+Go to Slack API Dashboard<br>
 
-Enable OAuth & Permissions
+Create a new app from scratch<br>
+
+Enable OAuth & Permissions<br>
 
 Add redirect URI: http://localhost:5000/auth/callback<br>
 
 Add scopes:
-
+<br>
 chat:write
-
+<br>
 channels:read
-
+<br>
 Copy Client ID and Client Secret into .env
-
+<br>
 🧱 Architectural Overview<br>
 ➤ OAuth Flow<br>
 Users click "Connect to Slack"<br>
 
-Redirected to Slack OAuth screen
+Redirected to Slack OAuth screen<br>
 
 Backend handles code and exchanges it for access_token and refresh_token
-
-Tokens stored securely in database (along with team/user identifiers)
+<br>
+Tokens stored securely in database (along with team/user identifiers)<br>
 
 ➤ Token Management
+<br>
 access_token is used to send messages
-
-When expired, backend uses refresh_token to get a new token
+<br>
+When expired, backend uses refresh_token to get a new token<br>
 
 Automatically refreshed before use via middleware or scheduled job
+<br>
+➤ Message Handling<br>
+Messages can be sent immediately or scheduled<br>
+<br>
+Scheduled messages stored in DB with time<br>
+node-cron runs every minute to check and send due messages<br>
 
-➤ Message Handling
-Messages can be sent immediately or scheduled
+➤ Cancel Scheduled Message<br>
+Users can see a list of scheduled messages<br>
 
-Scheduled messages stored in DB with time
+Option to cancel (which deletes from DB)<br>
 
-node-cron runs every minute to check and send due messages
+📸 UI Features<br>
+✅ Connect your Slack Workspace<br>
 
-➤ Cancel Scheduled Message
-Users can see a list of scheduled messages
+📋 List all channels (via API)<br>
 
-Option to cancel (which deletes from DB)
-
-📸 UI Features
-✅ Connect your Slack Workspace
-
-📋 List all channels (via API)
-
-💬 Compose a message
+💬 Compose a message<br>
 
 🕒 Select scheduled time (via datetime input)
 
@@ -133,17 +130,17 @@ Backend: Render, Heroku, Railway
 Update .env values with your deployed backend URL and Slack redirect URL
 
 💡 Challenges & Learnings<br>
-🔄 Refresh Token Logic
-Slack does not provide long-lived refresh tokens. Learned to:
+🔄 Refresh Token Logic<br>
+Slack does not provide long-lived refresh tokens. Learned to:<br>
 
-Use oauth.v2.access to reauthenticate when tokens expire
+Use oauth.v2.access to reauthenticate when tokens expire<br>
 
-Store token expiry time in DB
+Store token expiry time in DB<br>
 
-Auto-refresh just before expiry
+Auto-refresh just before expiry<br>
 
-⏰ Reliable Scheduling
-Message scheduling with setTimeout isn't reliable for long durations.
+⏰ Reliable Scheduling<br>
+Message scheduling with setTimeout isn't reliable for long durations.<br>
 
 Switched to node-cron polling every minute
 
@@ -166,17 +163,17 @@ Used conversations.list with Bearer token
 
  Add email alerts/reminders
 
+<br>
 
+This is a slack based application which can be used to schedule messages between a combination of different channels, users or groups irrespective of the timezone. <br>
 
-This is a slack based application which can be used to schedule messages between a combination of different channels, users or groups irrespective of the timezone.
+### Build Instructions<br>
+Run `npm install` to install dependencies and you have to set the `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `SLACK_SIGNING_SECRET` as env variables as it is used inside the application.<br>
 
-### Build Instructions
-Run `npm install` to install dependencies and you have to set the `SLACK_BOT_TOKEN`, `SLACK_APP_TOKEN`, `SLACK_SIGNING_SECRET` as env variables as it is used inside the application.
+After that you can run the application by `node app.js`<br>
 
-After that you can run the application by `node app.js`
-
-### Usage Instructions
-Search for Scheduler in the global shortcut
+### Usage Instructions<br>
+Search for Scheduler in the global shortcut<br>
 
 ![image](https://user-images.githubusercontent.com/47693983/224338973-ee5cba98-7da0-4e28-800b-a0554d1e7823.png)
 
